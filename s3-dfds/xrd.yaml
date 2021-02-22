@@ -1,0 +1,37 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: composites3buckets.storage.crossplane.dfds.cloud
+spec:
+  group: storage.crossplane.dfds.cloud
+  names:
+    kind: CompositeS3Bucket
+    plural: composites3buckets
+  claimNames:
+    kind: S3Bucket
+    plural: s3buckets
+  connectionSecretKeys:
+    - username
+    - password
+    - endpoint
+    - bucketName
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  name:
+                    type: string
+                required:
+                  - name
+            required:
+              - parameters

@@ -1,0 +1,13 @@
+apiVersion: s3.aws.crossplane.io/v1beta1
+kind: Bucket
+metadata:
+  name: crossplane-emcla
+spec:
+  deletionPolicy: "Delete"
+  forProvider:
+    locationConstraint: "eu-west-1"
+  writeConnectionSecretToRef:
+    namespace: developerautomation-xavgy
+    name: "crossplane-emcla-s3"
+  providerConfigRef:
+    name: cost-janitor-provider-config   

@@ -1,0 +1,13 @@
+apiVersion: storage.crossplane.dfds.cloud/v1alpha1
+kind: S3Bucket
+metadata:
+  name: crossplane-emcla
+  namespace: developerautomation-xavgy
+spec:
+  parameters:
+    name: crossplane-emcla
+  compositionSelector:
+    matchLabels:
+      provider: aws
+  writeConnectionSecretToRef:
+    name: s3-conn

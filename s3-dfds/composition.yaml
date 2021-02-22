@@ -1,0 +1,39 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: composites3buckets.aws.storage.crossplane.dfds.cloud
+  labels:
+    provider: aws
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: storage.crossplane.dfds.cloud/v1alpha1
+    kind: CompositeS3Bucket
+  resources:
+    - base:
+        apiVersion: s3.aws.crossplane.io/v1beta1
+        kind: Bucket
+        spec:
+          deletionPolicy: "Delete"
+          forProvider:
+            locationConstraint: "eu-west-1"
+          writeConnectionSecretToRef:
+            namespace: crossplane-system
+          providerConfigRef:
+            name: cost-janitor-provider-config                
+      patches:
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: "spec.writeConnectionSecretToRef.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-s3"
+        - fromFieldPath: "spec.parameters.storageGB"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+        - fromFieldPath: "spec.parameters.name"
+          toFieldPath: "metadata.name"          
+      connectionDetails:
+        - fromConnectionSecretKey: username
+        - fromConnectionSecretKey: password
+        - fromConnectionSecretKey: endpoint
+        - fromConnectionSecretKey: bucketName

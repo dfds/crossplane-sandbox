@@ -1,0 +1,6 @@
+apiVersion: stable.dfds.cloud/v1alpha1
+kind: ServiceProxy
+metadata:
+  name: "capsvc"
+spec:
+  services: "capability-service"
