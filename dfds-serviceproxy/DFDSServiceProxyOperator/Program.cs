@@ -9,7 +9,7 @@ namespace DFDSServiceProxyOperator
         public static async Task Main(string[] args)
         {
             var clientConfig = KubernetesClientConfiguration.BuildDefaultConfig();
-            var generic = new GenericClient(clientConfig, "stable.dfds.cloud", "v1alpha1", "servicesproxies");
+            var generic = new GenericClient(clientConfig, "stable.dfds.cloud", "v1alpha1", "serviceproxies");
 
             var crs = await generic.ListNamespacedAsync<CustomResourceList<ServiceProxy>>("developerautomation-xavgy");
             foreach (var cr in crs.Items)
