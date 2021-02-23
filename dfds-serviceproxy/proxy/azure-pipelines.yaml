@@ -13,9 +13,9 @@ trigger:
     - azure-pipelines.yaml
     - notes.md
     include:
-    - Dockerfile
-    - run.sh
-    - nginx.conf
+    - dfds-serviceproxy/proxy/Dockerfile
+    - dfds-serviceproxy/proxy/run.sh
+    - dfds-serviceproxy/proxy/nginx.conf
 
 # Disables triggering Pipeline run at creation of every Pull Request
 pr: none
@@ -40,8 +40,8 @@ stages:
       - task: Docker@2
         inputs:
           command: 'build'
-          buildContext: ''
-          Dockerfile: 'Dockerfile'
+          buildContext: 'dfds-serviceproxy/proxy'
+          Dockerfile: 'dfds-serviceproxy/proxy/Dockerfile'
           arguments: '-t serviceproxy-agent'
   
       - task: ECRPushImage@1
