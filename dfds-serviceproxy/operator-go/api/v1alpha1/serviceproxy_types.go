@@ -29,14 +29,15 @@ type ServiceProxySpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of ServiceProxy. Edit ServiceProxy_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Foo      string                `json:"foo,omitempty"`
 	Services []ServiceProxyService `json:"services"`
 }
 
 type ServiceProxyService struct {
-	Name string `json:"name"`
+	Name                   string `json:"name"`
 	LookupServiceNamespace string `json:"lookupServiceNamespace"`
-	LookupServiceName string `json:"lookupServiceName"`
+	LookupServiceName      string `json:"lookupServiceName"`
+	LookupServicePort      int    `json:"lookupServicePort"`
 }
 
 // ServiceProxyStatus defines the observed state of ServiceProxy

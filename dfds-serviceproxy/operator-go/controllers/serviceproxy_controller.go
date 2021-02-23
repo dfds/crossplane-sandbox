@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+
 	"github.com/go-logr/logr"
 	v1 "k8s.io/api/apps/v1"
 	v12 "k8s.io/api/core/v1"
@@ -100,11 +101,11 @@ func (r *ServiceProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			// Deployment created successfully - return and requeue
 
 			// Create Service for Deployment
-			svc := r.serviceForDeployment(dep, serviceProxy)
-			fmt.Println("Creating a new Service", "Service.Namespace", svc, "Service.Name", svc.Name)
-			err = r.Create(ctx, svc)
+			currentSvc := r.serviceForDeployment(dep, serviceProxy, svc)
+			fmt.Println("Creating a new Service", "Service.Namespace", currentSvc, "Service.Name", currentSvc.Name)
+			err = r.Create(ctx, currentSvc)
 			if err != nil {
-				fmt.Println(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+				fmt.Println(err, "Failed to create new Service", "Service.Namespace", currentSvc.Namespace, "Service.Name", currentSvc.Name)
 				return ctrl.Result{}, err
 			}
 
@@ -123,14 +124,14 @@ func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.Ser
 	replicas := int32(1)
 
 	ls := labelsForServiceProxy(s.Name, svc.Name)
-	addr := fmt.Sprintf("http://%s.%s.svc.cluster.local", svc.LookupServiceName, svc.LookupServiceNamespace)
+	addr := fmt.Sprintf("http://%s.%s.svc.cluster.local:%v", svc.LookupServiceName, svc.LookupServiceNamespace, svc.LookupServicePort)
 
-	dep := &v1.Deployment {
+	dep := &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
+			Name:      name,
 			Namespace: s.Namespace,
 		},
-		Spec:       v1.DeploymentSpec{
+		Spec: v1.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: ls,
@@ -142,18 +143,18 @@ func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.Ser
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{
 						{
-							Image: "642375522597.dkr.ecr.eu-west-1.amazonaws.com/dfds.developerautomation-xavgy.serviceproxy:agent-337562",
-							Name: "nginx-proxy",
+							Image: "dfdsdk/serviceproxy-agent:latest",
+							Name:  "nginx-proxy",
 							Env: []v12.EnvVar{
 								{
-									Name: "ADDR",
+									Name:  "ADDR",
 									Value: addr,
 								},
 							},
 							Ports: []v12.ContainerPort{
 								{
 									ContainerPort: 80,
-									Name: "http",
+									Name:          "http",
 								},
 							},
 						},
@@ -168,20 +169,20 @@ func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.Ser
 	return dep
 }
 
-func (r *ServiceProxyReconciler) serviceForDeployment(d *v1.Deployment, s *stablev1alpha1.ServiceProxy) *v12.Service{
+func (r *ServiceProxyReconciler) serviceForDeployment(d *v1.Deployment, s *stablev1alpha1.ServiceProxy, svcx stablev1alpha1.ServiceProxyService) *v12.Service {
 	selector := map[string]string{}
 	selector["serviceproxy_svc"] = d.Name
 
 	svc := &v12.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: d.Namespace,
-			Name: d.Name,
+			Name:      d.Name,
 		},
 		Spec: v12.ServiceSpec{
 			Ports: []v12.ServicePort{
 				{
-					Name: "http",
-					Port: 80,
+					Name:       "http",
+					Port:       80,
 					TargetPort: intstr.FromInt(80),
 				},
 			},

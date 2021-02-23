@@ -47,11 +47,14 @@ spec:
                       type: string
                     lookupServiceNamespace:
                       type: string
+                    lookupServicePort:
+                      type: integer
                     name:
                       type: string
                   required:
                   - lookupServiceName
                   - lookupServiceNamespace
+                  - lookupServicePort
                   - name
                   type: object
                 type: array
