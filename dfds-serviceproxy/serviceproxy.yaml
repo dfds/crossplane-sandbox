@@ -3,4 +3,7 @@ kind: ServiceProxy
 metadata:
   name: "capsvc"
 spec:
-  services: "capability-service"
+  services:
+    - name: "whatever"
+      lookupServiceName: "Capability-Service"
+      lookupServiceNamespace: "selfservice"
