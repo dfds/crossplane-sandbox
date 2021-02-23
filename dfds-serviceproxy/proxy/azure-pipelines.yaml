@@ -25,7 +25,9 @@ pool:
   vmImage: 'ubuntu-latest'
 
 # Global variables for the pipeline
-#variables:
+variables:
+- group: Developer-Automation
+  
 
 stages:
 # Continuous Integration Stage
@@ -44,7 +46,7 @@ stages:
   
       - task: ECRPushImage@1
         inputs:
-          awsCredentials: 'Shared-Prod ECR-Push'
+          awsCredentials: 'DeveloperAutomation ECR'
           regionName: 'eu-west-1'
           imageSource: 'imagename'
           sourceImageName: 'serviceproxy-agent'
