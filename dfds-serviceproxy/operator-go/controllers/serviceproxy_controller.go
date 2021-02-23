@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -78,37 +79,55 @@ func (r *ServiceProxyReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Check if Deployment used for proxy already exists, if not create it.
-	found := &v1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{
-		Namespace: serviceProxy.Namespace,
-		Name:      serviceProxy.Name,
-	}, found)
-	if err != nil && errors.IsNotFound(err) {
-		// Define a new deployment
-		dep := r.deploymentForServiceProxy(serviceProxy)
-		fmt.Println("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
-		err = r.Create(ctx, dep)
-		if err != nil {
-			fmt.Println(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+
+	for _, svc := range serviceProxy.Spec.Services {
+		found := &v1.Deployment{}
+		name := fmt.Sprintf("%s-%s", serviceProxy.Name, svc.Name)
+		err = r.Get(ctx, types.NamespacedName{
+			Namespace: serviceProxy.Namespace,
+			Name:      name,
+		}, found)
+
+		if err != nil && errors.IsNotFound(err) {
+			// Define a new deployment
+			dep := r.deploymentForServiceProxy(serviceProxy, name, svc)
+			fmt.Println("Creating a new Deployment", "Deployment.Namespace", dep, "Deployment.Name", dep.Name)
+			err = r.Create(ctx, dep)
+			if err != nil {
+				fmt.Println(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+				return ctrl.Result{}, err
+			}
+			// Deployment created successfully - return and requeue
+
+			// Create Service for Deployment
+			svc := r.serviceForDeployment(dep, serviceProxy)
+			fmt.Println("Creating a new Service", "Service.Namespace", svc, "Service.Name", svc.Name)
+			err = r.Create(ctx, svc)
+			if err != nil {
+				fmt.Println(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+				return ctrl.Result{}, err
+			}
+
+		} else if err != nil {
+			fmt.Println(err, "Failed to get Deployment")
 			return ctrl.Result{}, err
 		}
-		// Deployment created successfully - return and requeue
-		return ctrl.Result{Requeue: true}, nil
-	} else if err != nil {
-		fmt.Println(err, "Failed to get Deployment")
-		return ctrl.Result{}, err
 	}
+
+	// 			return ctrl.Result{Requeue: true}, nil
 
 	return ctrl.Result{}, nil
 }
 
-func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.ServiceProxy) *v1.Deployment {
-	ls := labelsForServiceProxy(s.Name)
+func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.ServiceProxy, name string, svc stablev1alpha1.ServiceProxyService) *v1.Deployment {
 	replicas := int32(1)
 
-	dep := &v1.Deployment{
+	ls := labelsForServiceProxy(s.Name, svc.Name)
+	addr := fmt.Sprintf("http://%s.%s.svc.cluster.local", svc.LookupServiceName, svc.LookupServiceNamespace)
+
+	dep := &v1.Deployment {
 		ObjectMeta: metav1.ObjectMeta{
-			Name: s.Name,
+			Name: name,
 			Namespace: s.Namespace,
 		},
 		Spec:       v1.DeploymentSpec{
@@ -123,8 +142,14 @@ func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.Ser
 				Spec: v12.PodSpec{
 					Containers: []v12.Container{
 						{
-							Image: "nginx",
+							Image: "642375522597.dkr.ecr.eu-west-1.amazonaws.com/dfds.developerautomation-xavgy.serviceproxy:agent-337562",
 							Name: "nginx-proxy",
+							Env: []v12.EnvVar{
+								{
+									Name: "ADDR",
+									Value: addr,
+								},
+							},
 							Ports: []v12.ContainerPort{
 								{
 									ContainerPort: 80,
@@ -139,13 +164,40 @@ func (r *ServiceProxyReconciler) deploymentForServiceProxy(s *stablev1alpha1.Ser
 	}
 
 	ctrl.SetControllerReference(s, dep, r.Scheme)
+
 	return dep
+}
+
+func (r *ServiceProxyReconciler) serviceForDeployment(d *v1.Deployment, s *stablev1alpha1.ServiceProxy) *v12.Service{
+	selector := map[string]string{}
+	selector["serviceproxy_svc"] = d.Name
+
+	svc := &v12.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: d.Namespace,
+			Name: d.Name,
+		},
+		Spec: v12.ServiceSpec{
+			Ports: []v12.ServicePort{
+				{
+					Name: "http",
+					Port: 80,
+					TargetPort: intstr.FromInt(80),
+				},
+			},
+			Selector: selector,
+		},
+	}
+
+	ctrl.SetControllerReference(s, svc, r.Scheme)
+
+	return svc
 }
 
 // labelsForServiceProxy returns the labels for selecting the resources
 // belonging to the given memcached CR name.
-func labelsForServiceProxy(name string) map[string]string {
-	return map[string]string{"app": "serviceproxy", "serviceproxy_cr": name}
+func labelsForServiceProxy(name string, svc string) map[string]string {
+	return map[string]string{"app": "serviceproxy", "serviceproxy_cr": name, "serviceproxy_svc": fmt.Sprintf("%s-%s", name, svc)}
 }
 
 // SetupWithManager sets up the controller with the Manager.

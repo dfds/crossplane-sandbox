@@ -7,3 +7,6 @@ spec:
     - name: "whatever"
       lookupServiceName: "Capability-Service"
       lookupServiceNamespace: "selfservice"
+    - name: "harald"
+      lookupServiceName: "harald"
+      lookupServiceNamespace: "selfservice-herald-vbqkr"
