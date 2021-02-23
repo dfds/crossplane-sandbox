@@ -1,10 +1,10 @@
 apiVersion: stable.dfds.cloud/v1alpha1
 kind: ServiceProxy
 metadata:
-  name: "capsvc"
+  name: "selfservice-gateway"
 spec:
   services:
-    - name: "whatever"
+    - name: "capsvc"
       lookupServiceName: "Capability-Service"
       lookupServiceNamespace: "selfservice"
     - name: "harald"
