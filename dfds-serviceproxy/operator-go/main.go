@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"github.com/dfds/crossplane-sandbox/dfds-serviceproxy/operator-go/misc"
 	"os"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -79,10 +80,13 @@ func main() {
 		os.Exit(1)
 	}
 
+	store := misc.NewStore()
+
 	if err = (&controllers.ServiceProxyAnnotationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
 		Scheme: mgr.GetScheme(),
+		Store: store,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ServiceProxyReconciler")
 		os.Exit(1)

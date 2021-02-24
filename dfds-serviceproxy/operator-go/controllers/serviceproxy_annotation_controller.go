@@ -10,12 +10,14 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
+	"github.com/dfds/crossplane-sandbox/dfds-serviceproxy/operator-go/misc"
 )
 
 type ServiceProxyAnnotationReconciler struct {
 	client.Client
 	Log logr.Logger
 	Scheme *runtime.Scheme
+	Store *misc.Store
 }
 
 func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -29,7 +31,8 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
-			fmt.Println("Service  resource not found. Ignoring since object must be deleted")
+			fmt.Println("Service resource not found. Cleaning up DynamoDB entry")
+			r.Store.RemoveService(misc.ServiceProxyServicesEntry{ServiceName: req.Name})
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -44,7 +47,9 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 		for key, val := range spAnnotations {
 			fmt.Println(key, ":", val)
 		}
+		r.Store.PutService(misc.ServiceProxyServicesEntry{ServiceName: svc.Name})
 	}
+
 
 	return ctrl.Result{}, nil
 }
