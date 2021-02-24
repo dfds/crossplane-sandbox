@@ -1,0 +1,21 @@
+apiVersion: dynamodb.aws.crossplane.io/v1alpha1
+kind: Table
+metadata:
+  name: serviceproxy-services
+spec:
+  providerConfigRef:
+    name: cost-janitor-provider-config
+  writeConnectionSecretToRef:
+    name: serviceproxy-dynamodb-table-services
+    namespace: developerautomation-xavgy
+  forProvider:
+    region: eu-west-1
+    keySchema:
+      - attributeName: servicename
+        keyType: HASH
+    attributeDefinitions:
+      - attributeName: servicename
+        attributeType: S 
+    provisionedThroughput:
+      readCapacityUnits: 1
+      writeCapacityUnits: 1
