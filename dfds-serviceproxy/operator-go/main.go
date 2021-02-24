@@ -79,6 +79,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.ServiceProxyAnnotationReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ServiceProxyReconciler")
+		os.Exit(1)
+	}
+
 	if err = (&controllers.ServiceProxyReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxy"),
