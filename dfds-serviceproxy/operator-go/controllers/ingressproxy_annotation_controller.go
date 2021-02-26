@@ -47,6 +47,8 @@ func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 		for key, val := range spAnnotations {
 			fmt.Println(key, ":", val)
 		}
+		result := r.GetIngressInfo(ing)
+		fmt.Println("INGRESS INFO: %s", result)
 		r.Store.PutService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Ingress"})
 	}
 
@@ -69,4 +71,12 @@ func (r *IngressProxyAnnotationReconciler) GetIngressProxyAnnotations(svc *v1net
 	}
 
 	return payload
+}
+
+func (r *IngressProxyAnnotationReconciler) GetIngressInfo(svc *v1net.Ingress) string {
+	info := ""
+
+	info = svc.Spec.String()
+
+	return info
 }
