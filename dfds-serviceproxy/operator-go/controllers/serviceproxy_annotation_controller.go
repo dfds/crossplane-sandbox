@@ -33,7 +33,7 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
 			fmt.Println("Service resource not found. Cleaning up DynamoDB entry")
-			r.Store.RemoveService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service"})
+			r.Store.RemoveService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service", ClusterName: "clustername"})
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -48,7 +48,7 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 		for key, val := range spAnnotations {
 			fmt.Println(key, ":", val)
 		}
-		r.Store.PutService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service"})
+		r.Store.PutService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service", ClusterName: "clustername"})
 	}
 
 	return ctrl.Result{}, nil
