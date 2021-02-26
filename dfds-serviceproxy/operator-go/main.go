@@ -18,8 +18,9 @@ package main
 
 import (
 	"flag"
-	"github.com/dfds/crossplane-sandbox/dfds-serviceproxy/operator-go/misc"
 	"os"
+
+	"github.com/dfds/crossplane-sandbox/dfds-serviceproxy/operator-go/misc"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -73,7 +74,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "ab15f4e4.dfds.cloud",
-		Namespace: "",
+		Namespace:              "",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -86,9 +87,19 @@ func main() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
 		Scheme: mgr.GetScheme(),
-		Store: store,
+		Store:  store,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ServiceProxyReconciler")
+		os.Exit(1)
+	}
+
+	if err = (&controllers.IngressProxyAnnotationReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("IngressProxyReconciler"),
+		Scheme: mgr.GetScheme(),
+		Store:  store,
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "IngressProxyReconciler")
 		os.Exit(1)
 	}
 
