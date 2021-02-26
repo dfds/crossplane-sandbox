@@ -7,6 +7,8 @@ spec:
     - name: "capsvc"
       lookupServiceName: "Capability-Service"
       lookupServiceNamespace: "selfservice"
+      lookupServicePort: 80
     - name: "harald"
       lookupServiceName: "harald"
       lookupServiceNamespace: "selfservice-herald-vbqkr"
+      lookupServicePort: 80
