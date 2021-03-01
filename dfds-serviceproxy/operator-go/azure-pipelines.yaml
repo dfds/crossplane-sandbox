@@ -1,0 +1,52 @@
+name: $(Build.BuildId)
+
+# Triggers Pipeline only on Master
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    # Changes to these files does not trigger a new build / release
+    exclude:
+    - README.md
+    - LICENSE
+    - azure-pipelines.yaml
+    - notes.md
+    include:
+    - dfds-serviceproxy/operator-go
+
+# Disables triggering Pipeline run at creation of every Pull Request
+pr: none
+
+# Default agent pool to use for build pipeline
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Global variables for the pipeline
+variables:
+- group: Developer-Automation
+  
+
+stages:
+# Continuous Integration Stage
+- stage: CI
+  displayName: 'Continuous Integration'
+  # Run CD only if CI succeeds and if pipeline runs from Master branch
+  jobs:
+  - job: containers
+    steps:
+      - task: Docker@2
+        inputs:
+          command: 'build'
+          buildContext: 'dfds-serviceproxy/operator-go'
+          Dockerfile: 'dfds-serviceproxy/operator-go/Dockerfile'
+          arguments: '-t serviceproxy-operator'
+  
+      - task: ECRPushImage@1
+        inputs:
+          awsCredentials: 'DeveloperAutomation ECR'
+          regionName: 'eu-west-1'
+          imageSource: 'imagename'
+          sourceImageName: 'serviceproxy-operator'
+          repositoryName: 'dfds.developerautomation-xavgy.serviceproxy'
+          pushTag: 'operator-$(Build.BuildId)'
