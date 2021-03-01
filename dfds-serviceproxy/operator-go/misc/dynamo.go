@@ -11,7 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type Store struct {
+type DynamoDbStore struct {
 	dynamoClient *dynamodb.DynamoDB
 }
 
@@ -54,7 +54,7 @@ func DeserialiseProxyItem(input string) (ServiceProxyItem, error) {
 	return item, errors.New("Unable to deserialise")
 }
 
-func NewStore() *Store {
+func NewStore() *DynamoDbStore {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-west-1"),
 		//		LogLevel: aws.LogLevel(aws.LogDebug),
@@ -63,12 +63,12 @@ func NewStore() *Store {
 		panic(err)
 	}
 
-	return &Store{
+	return &DynamoDbStore{
 		dynamoClient: dynamodb.New(sess),
 	}
 }
 
-func (s *Store) PutService(entry ServiceProxyItem) {
+func (s *DynamoDbStore) PutService(entry ServiceProxyItem) {
 	dynamoEntry, err := dynamodbattribute.MarshalMap(ServiceProxyTable{ServiceName: SerialiseProxyItem(entry)})
 	if err != nil {
 		panic(err)
@@ -87,7 +87,7 @@ func (s *Store) PutService(entry ServiceProxyItem) {
 	fmt.Println("Stored object ", entry.ObjectName, " to table ", "serviceproxy-services")
 }
 
-func (s *Store) RemoveService(entry ServiceProxyItem) {
+func (s *DynamoDbStore) RemoveService(entry ServiceProxyItem) {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"servicename": {

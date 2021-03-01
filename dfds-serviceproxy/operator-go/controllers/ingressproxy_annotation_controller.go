@@ -18,7 +18,7 @@ type IngressProxyAnnotationReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	Store  *misc.Store
+	Store  *misc.DynamoDbStore
 }
 
 func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
