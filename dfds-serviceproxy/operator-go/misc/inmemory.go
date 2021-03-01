@@ -2,35 +2,53 @@ package misc
 
 import (
 	v1 "k8s.io/api/core/v1"
-	v1Networking "k8s.io/api/networking/v1"
+	v1Networking "k8s.io/api/networking/v1beta1"
 )
 
-type Store struct {
-	Services map[string]v1.Service
-	Ingresses map[string]v1Networking.Ingress
+type InMemoryStore struct {
+	Services  map[string]*v1.Service
+	Ingresses map[string]*v1Networking.Ingress
 }
 
-func NewStore() *Store{
-	return &Store {
-		Services: make(map[string]v1.Service),
-		Ingresses: make(map[string]v1Networking.Ingress),
+func NewInMemoryStore() *InMemoryStore {
+	return &InMemoryStore{
+		Services:  make(map[string]*v1.Service),
+		Ingresses: make(map[string]*v1Networking.Ingress),
 	}
 }
 
-func (s *Store) PutService(key string, val v1.Service) {
+// Service
+
+func (s *InMemoryStore) PutService(key string, val *v1.Service) {
 	s.Services[key] = val
 }
 
-func (s *Store) GetService(key string) v1.Service {
+func (s *InMemoryStore) GetService(key string) *v1.Service {
 	return s.Services[key]
 }
 
-func (s *Store) GetServices() map[string]v1.Service {
+func (s *InMemoryStore) GetServices() map[string]*v1.Service {
 	return s.Services
 }
 
-
-func (s *Store) RemoveService(key string, val v1.Service) {
+func (s *InMemoryStore) RemoveService(key string) {
 	delete(s.Services, key)
 }
 
+// Ingress
+
+func (s *InMemoryStore) PutIngress(key string, val *v1Networking.Ingress) {
+	s.Ingresses[key] = val
+}
+
+func (s *InMemoryStore) GetIngress(key string) *v1Networking.Ingress {
+	return s.Ingresses[key]
+}
+
+func (s *InMemoryStore) GetIngresses() map[string]*v1Networking.Ingress {
+	return s.Ingresses
+}
+
+func (s *InMemoryStore) RemoveIngress(key string) {
+	delete(s.Ingresses, key)
+}

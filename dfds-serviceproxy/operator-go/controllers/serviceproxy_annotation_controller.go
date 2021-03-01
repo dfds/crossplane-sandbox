@@ -18,7 +18,7 @@ type ServiceProxyAnnotationReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	Store  *misc.DynamoDbStore
+	Store  *misc.InMemoryStore
 }
 
 func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -27,6 +27,8 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 	svc := &v1.Service{}
 	err := r.Get(ctx, req.NamespacedName, svc)
 
+	key := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
+
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -34,8 +36,7 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 			// Return and don't requeue
 			fmt.Println("Service resource not found. Cleaning up DynamoDB entry")
 
-			r.Store.RemoveService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service", ClusterName: "clustername"})
-			// REPLACE WITH IN-MEMORY STORE
+			r.Store.RemoveService(key)
 
 			return ctrl.Result{}, nil
 		}
@@ -45,8 +46,8 @@ func (r *ServiceProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 	}
 
 	fmt.Println("Service discovered: ", svc.Name)
-	// REPLACE WITH IN-MEMORY STORE
-	r.Store.PutService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Service", ClusterName: "clustername"})
+
+	r.Store.PutService(key, svc)
 
 	return ctrl.Result{}, nil
 }

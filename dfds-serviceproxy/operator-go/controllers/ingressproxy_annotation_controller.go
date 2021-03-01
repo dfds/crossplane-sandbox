@@ -18,7 +18,7 @@ type IngressProxyAnnotationReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-	Store  *misc.DynamoDbStore
+	Store  *misc.InMemoryStore
 }
 
 func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -26,13 +26,16 @@ func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 
 	ing := &v1net.Ingress{}
 	err := r.Get(ctx, req.NamespacedName, ing)
+
+	key := fmt.Sprintf("%s:%s", req.Namespace, req.Name)
+
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
 			fmt.Println("Ingress resource not found. Cleaning up DynamoDB entry")
-			r.Store.RemoveService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Ingress", ClusterName: "clustername"})
+			r.Store.RemoveIngress(key)
 			return ctrl.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
@@ -47,10 +50,10 @@ func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 		for key, val := range spAnnotations {
 			fmt.Println(key, ":", val)
 		}
-		result := r.GetIngressInfo(ing)
-		fmt.Println("INGRESS INFO: %s", result)
-		identifier := r.GetIngressProxyAnnotations(ing)["dfds.serviceproxy.kubernetes.io/identifier"]
-		r.Store.PutService(misc.ServiceProxyItem{ObjectName: req.Name, ObjectNamespace: req.Namespace, ObjectKind: "Ingress", ClusterName: "clustername", Endpoint: r.GetFirstIngressEndpoint(ing), Identifier: identifier})
+		//result := r.GetIngressInfo(ing)
+		//fmt.Println("INGRESS INFO: %s", result)
+		//identifier := r.GetIngressProxyAnnotations(ing)["dfds.serviceproxy.kubernetes.io/identifier"]
+		r.Store.PutIngress(key, ing)
 	}
 
 	return ctrl.Result{}, nil

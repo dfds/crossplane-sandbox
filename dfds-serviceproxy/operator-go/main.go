@@ -81,7 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	store := misc.NewDynamoDbStore()
+	store := misc.NewInMemoryStore()
 
 	if err = (&controllers.ServiceProxyAnnotationReconciler{
 		Client: mgr.GetClient(),
