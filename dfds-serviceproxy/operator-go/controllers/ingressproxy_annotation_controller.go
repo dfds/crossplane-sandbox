@@ -44,17 +44,7 @@ func (r *IngressProxyAnnotationReconciler) Reconcile(ctx context.Context, req ct
 	}
 
 	fmt.Println("Ingress discovered: ", ing.Name)
-	spAnnotations := r.GetIngressProxyAnnotations(ing)
-	if len(spAnnotations) > 0 {
-		fmt.Println("This ingress contains ServiceProxyAnnotations:")
-		for key, val := range spAnnotations {
-			fmt.Println(key, ":", val)
-		}
-		//result := r.GetIngressInfo(ing)
-		//fmt.Println("INGRESS INFO: %s", result)
-		//identifier := r.GetIngressProxyAnnotations(ing)["dfds.serviceproxy.kubernetes.io/identifier"]
-		r.Store.PutIngress(key, ing)
-	}
+	r.Store.PutIngress(key, ing)
 
 	return ctrl.Result{}, nil
 }

@@ -83,6 +83,9 @@ func main() {
 
 	store := misc.NewInMemoryStore()
 
+	// Start separate Goroutine that runs the API server
+	go misc.InitApi(store)
+
 	if err = (&controllers.ServiceProxyAnnotationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
@@ -103,14 +106,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ServiceProxyReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxy"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ServiceProxy")
-		os.Exit(1)
-	}
+	//
+	//if err = (&controllers.ServiceProxyReconciler{
+	//	Client: mgr.GetClient(),
+	//	Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxy"),
+	//	Scheme: mgr.GetScheme(),
+	//}).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "ServiceProxy")
+	//	os.Exit(1)
+	//}
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
