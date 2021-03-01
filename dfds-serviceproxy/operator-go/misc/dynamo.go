@@ -54,7 +54,7 @@ func DeserialiseProxyItem(input string) (ServiceProxyItem, error) {
 	return item, errors.New("Unable to deserialise")
 }
 
-func NewStore() *DynamoDbStore {
+func NewDynamoDbStore() *DynamoDbStore {
 	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("eu-west-1"),
 		//		LogLevel: aws.LogLevel(aws.LogDebug),
