@@ -50,3 +50,22 @@ stages:
           sourceImageName: 'serviceproxy-operator'
           repositoryName: 'dfds.developerautomation-xavgy.serviceproxy'
           pushTag: 'operator-$(Build.BuildId)'
+
+      # Replace token values in yaml files with pipeline variables
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+        displayName: 'Replace tokens in k8s manifests'
+        inputs:
+          rootDirectory: '$(Build.SourcesDirectory)/dfds-serviceproxy/operator-go/k8s/'
+          targetFiles: '*.yaml'
+          tokenPrefix: '#('
+          tokenSuffix: ')'
+
+      # Apply Kubernetes manifests
+      - task: Kubernetes@1
+        displayName: 'Apply k8s manifests'
+        inputs:
+          connectionType: Kubernetes Service Connection
+          kubernetesServiceEndpoint: 'Kubernetes-Developer-Automation-Deploy'
+          namespace: 'developerautomation-xavgy'
+          command: apply
+          arguments: '-f $(Build.SourcesDirectory)/dfds-serviceproxy/operator-go/k8s/'          
