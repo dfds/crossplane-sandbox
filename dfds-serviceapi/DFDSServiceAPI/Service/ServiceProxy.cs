@@ -1,6 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using k8s;
+using k8s.Models;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Service.Classes;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -20,8 +25,27 @@ namespace Service
             ServiceProxyResult result = new ServiceProxyResult();
             using (_client)
             {
-                result.result = await _client.GetAsync("/api/get-all").Result.Content.ReadAsStringAsync();
+                var temp = await _client.GetAsync("/api/get-all").Result.Content.ReadAsStringAsync();
+                var json = JObject.Parse(temp);
+                var ingress = json["Ingress"];
+                var service = json["Service"];
+
+                foreach (var x in ingress)
+                {
+                    var s = JsonConvert.DeserializeObject<Extensionsv1beta1Ingress>(x.ToString());
+                    Console.WriteLine(x);
+                    result.ingresses.Add(s);
+                }
+
+                foreach (var y in service)
+                {
+                    var s = JsonConvert.DeserializeObject<V1APIService>(y.ToString());
+                    Console.WriteLine(y);
+                    result.services.Add(s);
+                }
+
             }
+
             return result;
         }
     }
