@@ -18,7 +18,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/dfds/crossplane-sandbox/dfds-serviceproxy/operator-go/misc"
 
@@ -41,6 +43,11 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+	enableServiceProxy = getEnvBool("SERVICEPROXY_ENABLE_SERVICEPROXY_CONTROLLER", true)
+	enableHttpApi = getEnvBool("SERVICEPROXY_ENABLE_HTTP_API", true)
+
+	enableIngressProxyAnnotationController = getEnvBool("SERVICEPROXY_ENABLE_INGRESSPROXY_ANNOTATION_CONTROLLER", true)
+	enableServiceProxyAnnotationController = getEnvBool("SERVICEPROXY_ENABLE_SERVICEPROXY_ANNOTATION_CONTROLLER", true)
 )
 
 func init() {
@@ -83,39 +90,55 @@ func main() {
 
 	store := misc.NewInMemoryStore()
 
-	// Start separate Goroutine that runs the API server
-	go misc.InitApi(store)
+	if enableHttpApi {
+		// Start separate Goroutine that runs the API server
+		fmt.Println("HTTP api enabled")
 
-	if err = (&controllers.ServiceProxyAnnotationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
-		Scheme: mgr.GetScheme(),
-		Store:  store,
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ServiceProxyReconciler")
-		os.Exit(1)
+		go misc.InitApi(store)
 	}
 
-	if err = (&controllers.IngressProxyAnnotationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("IngressProxyReconciler"),
-		Scheme: mgr.GetScheme(),
-		Store:  store,
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "IngressProxyReconciler")
-		os.Exit(1)
+
+	if enableServiceProxyAnnotationController {
+		fmt.Println("ServiceProxyAnnotationController enabled")
+
+		if err = (&controllers.ServiceProxyAnnotationReconciler{
+			Client: mgr.GetClient(),
+			Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxyReconciler"),
+			Scheme: mgr.GetScheme(),
+			Store:  store,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "ServiceProxyReconciler")
+			os.Exit(1)
+		}
+
 	}
 
-	//
-	//if err = (&controllers.ServiceProxyReconciler{
-	//	Client: mgr.GetClient(),
-	//	Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxy"),
-	//	Scheme: mgr.GetScheme(),
-	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "ServiceProxy")
-	//	os.Exit(1)
-	//}
-	// +kubebuilder:scaffold:builder
+	if enableIngressProxyAnnotationController {
+		fmt.Println("IngressProxyAnnotationController enabled")
+
+		if err = (&controllers.IngressProxyAnnotationReconciler{
+			Client: mgr.GetClient(),
+			Log:    ctrl.Log.WithName("controllers").WithName("IngressProxyReconciler"),
+			Scheme: mgr.GetScheme(),
+			Store:  store,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "IngressProxyReconciler")
+			os.Exit(1)
+		}
+	}
+
+	if enableServiceProxy {
+		fmt.Println("ServiceProxy CRD controller enabled")
+		if err = (&controllers.ServiceProxyReconciler{
+			Client: mgr.GetClient(),
+			Log:    ctrl.Log.WithName("controllers").WithName("ServiceProxy"),
+			Scheme: mgr.GetScheme(),
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "ServiceProxy")
+			os.Exit(1)
+		}
+		// +kubebuilder:scaffold:builder
+	}
 
 	if err := mgr.AddHealthzCheck("health", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
@@ -131,4 +154,32 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+
+func getEnvValue(key string, def string) string {
+	val := os.Getenv(key)
+	if len(val) == 0 {
+		return def
+	}
+
+	return val
+}
+
+func getEnvBool(key string, def bool) bool {
+	val := os.Getenv(key)
+
+	if len(val) == 0 {
+		return def
+	}
+
+	if strings.Compare("false", strings.ToLower(val)) == 0 {
+		return false
+	}
+
+	if strings.Compare("true", strings.ToLower(val)) == 0 {
+		return true
+	}
+
+	return def
 }

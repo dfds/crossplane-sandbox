@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: serviceproxy-operator
   namespace: developerautomation-xavgy
+  annotations:
+    iam.amazonaws.com/role: arn:aws:iam::642375522597:role/ServiceProxy-dyndb
   labels:
     project: developerautomation
     department: cloudengineering
