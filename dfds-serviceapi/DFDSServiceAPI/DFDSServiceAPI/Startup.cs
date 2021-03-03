@@ -35,7 +35,8 @@ namespace DFDSServiceAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DFDSServiceAPI", Version = "v1" });
             });
 
-            services.AddServiceProxyServiceCollection(Configuration.GetSection("ServiceProxy:Url").Value);
+            var test = Configuration.GetSection("ServiceProxy:Urls").GetChildren().Select(x => x.Value).ToArray();
+            services.AddServiceProxyServiceCollection(Configuration.GetSection("ServiceProxy:Urls").GetChildren().Select(x => x.Value).ToArray());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

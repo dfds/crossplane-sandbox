@@ -15,35 +15,42 @@ namespace Service
     {
         private readonly HttpClient _client = new HttpClient();
 
-        public ServiceProxy(IOptions<ServiceProxySettings> options)
+        public ServiceProxy(string proxyUrl)
         {
-            _client.BaseAddress = new Uri(options.Value.proxyUrl);
+            _client.BaseAddress = new Uri(proxyUrl);
         }
 
         public async Task<ServiceProxyResult> GetResults()
         {
-            ServiceProxyResult result = new ServiceProxyResult();
+            ServiceProxyResult result = new ServiceProxyResult(_client.BaseAddress.ToString());
+
             using (_client)
-            {
-                var temp = await _client.GetAsync("/api/get-all").Result.Content.ReadAsStringAsync();
-                var json = JObject.Parse(temp);
-                var ingress = json["Ingress"];
-                var service = json["Service"];
+            {     
+                _client.BaseAddress = new Uri(_client.BaseAddress.ToString());
 
-                foreach (var x in ingress)
+                try
                 {
-                    var s = JsonConvert.DeserializeObject<Extensionsv1beta1Ingress>(x.ToString());
-                    Console.WriteLine(x);
-                    result.ingresses.Add(s);
-                }
+                    var temp = await _client.GetAsync("/api/get-all").Result.Content.ReadAsStringAsync();
+                    var json = JObject.Parse(temp);
+                    var ingress = json["Ingress"];
+                    var service = json["Service"];
 
-                foreach (var y in service)
+                    foreach (var x in ingress)
+                    {
+                        var s = JsonConvert.DeserializeObject<Extensionsv1beta1Ingress>(x.ToString());
+                        result.ingresses.Add(s);
+                    }
+
+                    foreach (var y in service)
+                    {
+                        var s = JsonConvert.DeserializeObject<V1APIService>(y.ToString());
+                        result.services.Add(s);
+                    }
+                }
+                catch (Exception e)
                 {
-                    var s = JsonConvert.DeserializeObject<V1APIService>(y.ToString());
-                    Console.WriteLine(y);
-                    result.services.Add(s);
+                    Console.WriteLine(e);
                 }
-
             }
 
             return result;
