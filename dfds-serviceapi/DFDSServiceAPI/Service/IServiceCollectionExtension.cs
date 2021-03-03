@@ -7,7 +7,7 @@ namespace Service
 {
     public static class IServiceCollectionExtension
     {
-        public static IServiceCollection AddServiceProxyServiceCollection(this IServiceCollection services, string proxyUrl)
+        public static IServiceCollection AddServiceProxyServiceCollection(this IServiceCollection services, string[] proxyUrl)
         {
             services.Configure<ServiceProxySettings>(
                 options =>
@@ -15,7 +15,7 @@ namespace Service
                     options.proxyUrl = proxyUrl;
                 });
 
-            services.AddTransient<IServiceProxy, ServiceProxy>();
+            services.AddTransient<IServiceProxyService, ServiceProxyService>();
             return services;
         }
     }

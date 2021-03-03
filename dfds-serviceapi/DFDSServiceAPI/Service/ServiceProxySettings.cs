@@ -6,6 +6,6 @@ namespace Service
 {
     public class ServiceProxySettings
     {
-        public string proxyUrl { get; set; }
+        public string[] proxyUrl { get; set; }
     }
 }
