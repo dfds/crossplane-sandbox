@@ -3,7 +3,7 @@
       <div class="capability" v-for="ns in Object.keys(services)" :key="ns">
           <div style="display: flex">
               <div style="flex: 1">
-                <span class="title entity">{{ ns }}</span>
+                <span class="title entity">{{ getCapability(ns) }}</span>
               </div>
               <div style="flex: 1; display: flex; flex-direction: column;">
                 <span v-for="svc in Object.keys(services[ns])" :key="svc" class="entity" style="margin-right: 10px;">{{ services[ns][svc].Kind }}: {{ services[ns][svc].Metadata.name }}</span>
@@ -44,6 +44,20 @@ export default {
           }
 
           return x.toFixed(5);
+      },
+      getCapability(rootid) {
+        var result = this.capabilities.filter(cap => {
+          if (cap.rootId.valueOf() === rootid.valueOf()) {
+            return true;
+          }
+          return false;
+        })
+
+        if (result.length > 0) {
+          return result[0].name;
+        }
+
+        return rootid;
       }
   }
 }

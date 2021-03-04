@@ -48,7 +48,7 @@ export default {
     },
     handleCapToken: function (resp) { 
       this.logged_in = true;
-      //this.getCapabilities(resp);
+      this.getCapabilities(resp);
       //this.getAllCosts(resp);
       this.getAllServices(resp);
     },
@@ -60,7 +60,7 @@ export default {
         x.capabilities = resp.items;
         console.log(x.capabilities);
       };
-      req.open("GET", "/api/get-capabilities");
+      req.open("GET", "/api-capsvc/v1/capabilities");
       req.setRequestHeader("Authorization", "Bearer " + token.accessToken);
       req.send();
 
@@ -76,7 +76,7 @@ export default {
         resp.Ingress.forEach(val => {
           if (payload[val.Metadata.namespace] == undefined) {
             payload[val.Metadata.namespace] = {};
-          }
+        }
 
           payload[val.Metadata.namespace][val.Kind + ":" + val.Metadata.name] = val;
         });

@@ -1,13 +1,18 @@
 module.exports = {
-    pluginOptions: {
-      proxy: {
-        enabled: true,
-        context: '/api',
-        options: {
-          target: 'http://localhost:8090',
-          changeOrigin: true
+  devServer: {
+    proxy: {
+      "/api-capsvc": {
+        target: 'https://api.hellman.oxygen.dfds.cloud',
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api-capsvc': '/capability/api'
         }
+      },
+      "/api": {
+        target: 'http://localhost:8090',
+        changeOrigin: true
       }
     }
   }
+}
   
