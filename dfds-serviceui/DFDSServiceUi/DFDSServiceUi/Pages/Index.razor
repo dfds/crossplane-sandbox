@@ -7,49 +7,109 @@
 
 <h1>DFDS ProxyService Catalog</h1>
 
-<p>Each Cluster's services are shown below.</p>
+<p>Each Capability's services are shown below.</p>
 
-@if (results == null)
+@if (capabilityResults == null)
 {
-    <p>Loading...</p>
+
 }
 else
 {
-    @foreach (var cluster in results)
+    @foreach (var capability in capabilityResults)
     {
-        <h2>@cluster.proxyName</h2>
-
-        <h3>Ingresses</h3>
-
-        @foreach (var ingress in cluster.ingresses)
+        @if (blacklist.Any(capability.capabilityName.Contains) == false)
         {
 
+        
+        <h1>@capability.capabilityName Capability</h1>
+
+        <h2>Ingresses</h2>
+        @foreach (var ingress in capability.ingresses)
+        {
             @foreach (var rules in ingress.Spec.Rules)
             {
                 @foreach (var paths in rules.Http.Paths)
                 {
-                    <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a>
+                    <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a> <a href="https://@(rules.Host + paths.Path)/swagger"><img height ="10" width ="10" src="swagger.png" /></a>
                     <br />
                 }
             }
+            <br />
         }
 
-        <h3>Services</h3>
-
-        @foreach (var service in cluster.services)
+        <h2>Services</h2>
+        @foreach (var service in capability.services)
         {
             @service.Metadata.Name
             <br />
         }
+        }
     }
 }
 
+
 @code {
     private ServiceProxyResult[] results;
+    private List<CapabilityResult> capabilityResults = new List<CapabilityResult>();
+
+    private List<string> blacklist = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
+        blacklist.Add("kube-system");
         Http.BaseAddress = new Uri(Configuration["ApiUrl"]);
         results = await Http.GetFromJsonAsync<ServiceProxyResult[]>("api/ServiceProxy");
+        GetCapabilities();
     }
+
+    void GetCapabilities()
+    {
+        foreach (var result in results)
+        {
+            foreach (var ingress in result.ingresses)
+            {
+                if (namespaceExists(ingress.Metadata.NamespaceProperty))
+                {
+                    capabilityResults.Single(s => s.capabilityName.Equals(ingress.Metadata.NamespaceProperty)).ingresses.Add(ingress);
+                }
+                else
+                {
+                    var thing = new CapabilityResult { capabilityName = ingress.Metadata.NamespaceProperty };
+                    thing.ingresses.Add(ingress);
+                    capabilityResults.Add(thing);
+                }
+
+            }
+
+            foreach (var service in result.services)
+            {
+                if (namespaceExists(service.Metadata.NamespaceProperty))
+                {
+                    Console.WriteLine(service.Metadata.NamespaceProperty);
+                    capabilityResults.Single(s => s.capabilityName.Equals(service.Metadata.NamespaceProperty)).services.Add(service);
+                }
+                else
+                {
+                    var thing = new CapabilityResult { capabilityName = service.Metadata.NamespaceProperty };
+                    thing.services.Add(service);
+                    capabilityResults.Add(thing);
+                }
+
+            }
+        }
+    }
+
+    private bool namespaceExists(string capability)
+    {
+        foreach (var result in capabilityResults)
+        {
+            if (result.capabilityName == capability)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
