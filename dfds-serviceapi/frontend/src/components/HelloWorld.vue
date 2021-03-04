@@ -2,6 +2,28 @@
   <div class="container">
     <div class="inner">
       <h1>Services discovered</h1>
+
+      <div style="display: flex;">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+          <span style="margin-bottom: 8px;">Service/Ingress per Capability</span>
+          <div style="position: relative; width:600px;">
+            <CapabilitiesServicesChart v-bind:chartdata="this.generateChartDataForServicesPerCapability" :options="{responsive: true, maintainAspectRatio: true, legend: {
+              display: false
+            }}" />
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; align-items: center; margin-left: 15px;">
+          <span style="margin-bottom: 8px;">Services vs Ingress</span>
+          <div style="position: relative; width:600px;">
+            <CapabilitiesServicesChart v-bind:chartdata="this.generateChartDataForServiceVsIngress" :options="{responsive: true, maintainAspectRatio: true, legend: {
+              display: false
+            }}" />
+          </div>
+        </div>        
+      </div>
+
+      
       <CapabilityListing v-bind:capabilities="this.capabilities" v-bind:services="this.services" v-bind:costs="this.costs" v-bind:logged_in="this.logged_in" />
     </div>
   </div>
@@ -9,6 +31,8 @@
 
 <script>
 import CapabilityListing from './CapabilityListing.vue'
+import CapabilitiesServicesChart from './CapabilitiesServicesChart.js';
+
 
 export default {
   name: 'HelloWorld',
@@ -24,7 +48,67 @@ export default {
     }
   },
   components: {
-    CapabilityListing
+    CapabilityListing,
+    CapabilitiesServicesChart
+  },
+
+  computed: {
+    generateChartDataForServicesPerCapability() {
+        var data = [];
+        var colours = [];
+        var labels = [];
+        var services = this.services;
+        Object.keys(services).forEach(namespace => {
+          data.push(Object.keys(services[namespace]).length);
+          colours.push(this.dynamicColour());
+          labels.push(namespace);
+        });
+
+        var payload = {
+          datasets: [{
+            data: data,
+            backgroundColor: colours
+          }],
+          labels: labels
+        };
+
+        return payload;      
+    },
+
+    generateChartDataForServiceVsIngress() {
+      var ingressCount = 0;
+      var serviceCount = 0;
+      var services = this.services;
+
+      Object.values(services).forEach(namespace => {
+        Object.values(namespace).forEach(obj => {
+          if (obj.Kind.valueOf() === "Ingress") {
+            ingressCount += 1;
+          } else {
+            serviceCount += 1;
+          }
+        });
+      });
+
+      var payload = {
+        datasets: [{
+          data: [ingressCount, serviceCount],
+          backgroundColor: [this.dynamicColour(), this.dynamicColour()]
+        }],
+        labels: ["Ingress", "Service"]
+      };
+
+        return payload;      
+    }
+  },
+
+  methods: {
+    dynamicColour() {
+      var r = Math.floor(Math.random() * 255);
+      var g = Math.floor(Math.random() * 255);
+      var b = Math.floor(Math.random() * 255);
+      return "rgb(" + r + "," + g + "," + b + ")";
+    }
   }
 }
 

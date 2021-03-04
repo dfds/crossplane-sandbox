@@ -16,7 +16,7 @@
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: 'CapabilityListing',
   props: {
     msg: String,
     logged_in: Boolean,
@@ -25,9 +25,7 @@ export default {
     services: Object
   },
   data() {
-      return {
-
-      }
+    return {}
   },
   methods: {
       getAwsAccountId(cap) {
