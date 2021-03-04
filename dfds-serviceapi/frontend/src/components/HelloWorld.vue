@@ -9,7 +9,12 @@
           <div style="position: relative; width:600px;">
             <CapabilitiesServicesChart v-bind:chartdata="this.generateChartDataForServicesPerCapability" :options="{responsive: true, maintainAspectRatio: true, legend: {
               display: false
-            }}" />
+            },
+            tooltips: {
+              titleFontSize: 18,
+              bodyFontSize: 18,
+            }
+            }" />
           </div>
         </div>
 
@@ -18,7 +23,13 @@
           <div style="position: relative; width:600px;">
             <CapabilitiesServicesChart v-bind:chartdata="this.generateChartDataForServiceVsIngress" :options="{responsive: true, maintainAspectRatio: true, legend: {
               display: false
-            }}" />
+            },
+            tooltips: {
+              titleFontSize: 18,
+              bodyFontSize: 18,
+            }
+            
+            }" />
           </div>
         </div>        
       </div>
