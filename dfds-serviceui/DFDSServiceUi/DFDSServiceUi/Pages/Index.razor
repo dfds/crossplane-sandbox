@@ -20,29 +20,33 @@ else
         @if (blacklist.Any(capability.capabilityName.Contains) == false)
         {
 
-        
-        <h1>@capability.capabilityName Capability</h1>
 
-        <h2>Ingresses</h2>
-        @foreach (var ingress in capability.ingresses)
-        {
-            @foreach (var rules in ingress.Spec.Rules)
+            <h1>@capability.capabilityName Capability</h1>
+
+            <h2>Ingresses</h2>
+            @foreach (var ingress in capability.ingresses)
             {
-                @foreach (var paths in rules.Http.Paths)
+                @foreach (var rules in ingress.Spec.Rules)
                 {
-                    <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a> <a href="https://@(rules.Host + paths.Path)/swagger"><img height ="10" width ="10" src="swagger.png" /></a>
-                    <br />
-                }
-            }
-            <br />
-        }
+                    @if (rules.Http != null)
+                    {
+                        @foreach (var paths in rules.Http.Paths)
+                        {
+                            <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a> <a href="https://@(rules.Host + paths.Path)/swagger"><img height ="10" width ="10" src="swagger.png" /></a>
+                                <br />
+                        }
+                    }
 
-        <h2>Services</h2>
-        @foreach (var service in capability.services)
-        {
-            @service.Metadata.Name
-            <br />
-        }
+                }
+                <br />
+            }
+
+            <h2>Services</h2>
+            @foreach (var service in capability.services)
+            {
+                @service.Metadata.Name
+                <br />
+            }
         }
     }
 }
