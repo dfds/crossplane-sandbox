@@ -1,12 +1,12 @@
 <template>
   <div class="capabilityListing" v-if="this.logged_in">
-      <div class="capability" v-for="capability in capabilities" :key="capability.id">
+      <div class="capability" v-for="ns in Object.keys(services)" :key="ns">
           <div style="display: flex">
               <div style="flex: 1">
-                <span class="title entity">{{capability.name}}</span>
+                <span class="title entity">{{ ns }}</span>
               </div>
-              <div style="flex: 1; display: flex; justify-content: flex-end;">
-                <span class="entity" style="margin-right: 10px;">${{ formatCost(costs[getAwsAccountId(capability)] )}}</span>
+              <div style="flex: 1; display: flex; flex-direction: column;">
+                <span v-for="svc in Object.keys(services[ns])" :key="svc" class="entity" style="margin-right: 10px;">{{ services[ns][svc].Kind }}: {{ services[ns][svc].Metadata.name }}</span>
               </div>              
           </div>
           
@@ -21,7 +21,8 @@ export default {
     msg: String,
     logged_in: Boolean,
     capabilities: Array,
-    costs: Object
+    costs: Object,
+    services: Object
   },
   data() {
       return {

@@ -1,8 +1,8 @@
 <template>
   <div class="container">
     <div class="inner">
-      <h1>Billing</h1>
-      <CapabilityListing v-bind:capabilities="this.capabilities" v-bind:costs="this.costs" v-bind:logged_in="this.logged_in" />
+      <h1>Services discovered</h1>
+      <CapabilityListing v-bind:capabilities="this.capabilities" v-bind:services="this.services" v-bind:costs="this.costs" v-bind:logged_in="this.logged_in" />
     </div>
   </div>
 </template>
@@ -16,7 +16,8 @@ export default {
     msg: String,
     logged_in: Boolean,
     capabilities: Array,
-    costs: {}
+    costs: {},
+    services: {}
   },
   data() {
     return {

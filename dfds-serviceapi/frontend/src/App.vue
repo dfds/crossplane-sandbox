@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <auth-header v-on:captoken="handleCapToken" v-on:login="login" v-on:logout="logout" />
-    <HelloWorld v-bind:capabilities="this.capabilities" v-bind:costs="this.costs" v-bind:logged_in="this.logged_in"  msg="Welcome to Your Vue.js App"/>
+    <HelloWorld v-bind:capabilities="this.capabilities" v-bind:services="this.services" v-bind:costs="this.costs" v-bind:logged_in="this.logged_in"  msg="Welcome to Your Vue.js App"/>
   </div>
 </template>
 
@@ -20,7 +20,8 @@ export default {
       return {
         logged_in: false,
         capabilities: [],
-        costs: {}
+        costs: {},
+        services: {}
       }
     },
     mounted() {
@@ -47,8 +48,9 @@ export default {
     },
     handleCapToken: function (resp) { 
       this.logged_in = true;
-      this.getCapabilities(resp);
-      this.getAllCosts(resp);
+      //this.getCapabilities(resp);
+      //this.getAllCosts(resp);
+      this.getAllServices(resp);
     },
     getCapabilities: function (token) {
       var req = new XMLHttpRequest();
@@ -62,6 +64,36 @@ export default {
       req.setRequestHeader("Authorization", "Bearer " + token.accessToken);
       req.send();
 
+    },
+    getAllServices: function (token) {
+      var req = new XMLHttpRequest();
+      var x = this;
+      req.onload = function () {
+        var resp = JSON.parse(req.responseText);
+
+        var payload = {};
+
+        resp.Ingress.forEach(val => {
+          if (payload[val.Metadata.namespace] == undefined) {
+            payload[val.Metadata.namespace] = {};
+          }
+
+          payload[val.Metadata.namespace][val.Kind + ":" + val.Metadata.name] = val;
+        });
+
+        resp.Service.forEach(val => {
+          if (payload[val.Metadata.namespace] == undefined) {
+            payload[val.Metadata.namespace] = {};
+          }
+
+          payload[val.Metadata.namespace][val.Kind + ":" + val.Metadata.name] = val;
+        });
+
+        x.services = payload;
+      };
+      req.open("GET", "/api/get-all");
+      req.setRequestHeader("Authorization", "Bearer " + token.accessToken);
+      req.send();      
     },
     getAllCosts: function (token) {
       var req = new XMLHttpRequest();
