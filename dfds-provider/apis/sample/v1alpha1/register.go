@@ -25,7 +25,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "sample.template.crossplane.io"
+	Group   = "stable.dfds.cloud"
 	Version = "v1alpha1"
 )
 
@@ -39,12 +39,12 @@ var (
 
 // MyType type metadata.
 var (
-	MyTypeKind             = reflect.TypeOf(MyType{}).Name()
-	MyTypeGroupKind        = schema.GroupKind{Group: Group, Kind: MyTypeKind}.String()
-	MyTypeKindAPIVersion   = MyTypeKind + "." + SchemeGroupVersion.String()
-	MyTypeGroupVersionKind = SchemeGroupVersion.WithKind(MyTypeKind)
+	ServiceProxyOperatorKind             = reflect.TypeOf(ServiceProxyOperator{}).Name()
+	ServiceProxyOperatorGroupKind        = schema.GroupKind{Group: Group, Kind: ServiceProxyOperatorKind}.String()
+	ServiceProxyOperatorKindAPIVersion   = ServiceProxyOperatorKind + "." + SchemeGroupVersion.String()
+	ServiceProxyOperatorGroupVersionKind = SchemeGroupVersion.WithKind(ServiceProxyOperatorKind)
 )
 
 func init() {
-	SchemeBuilder.Register(&MyType{}, &MyTypeList{})
+	SchemeBuilder.Register(&ServiceProxyOperator{}, &ServiceProxyOperatorList{})
 }

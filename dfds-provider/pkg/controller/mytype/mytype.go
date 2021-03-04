@@ -54,10 +54,10 @@ var (
 
 // Setup adds a controller that reconciles MyType managed resources.
 func Setup(mgr ctrl.Manager, l logging.Logger) error {
-	name := managed.ControllerName(v1alpha1.MyTypeGroupKind)
+	name := managed.ControllerName(v1alpha1.ServiceProxyOperatorGroupKind)
 
 	r := managed.NewReconciler(mgr,
-		resource.ManagedKind(v1alpha1.MyTypeGroupVersionKind),
+		resource.ManagedKind(v1alpha1.ServiceProxyOperatorGroupVersionKind),
 		managed.WithExternalConnecter(&connector{
 			kube:         mgr.GetClient(),
 			usage:        resource.NewProviderConfigUsageTracker(mgr.GetClient(), &apisv1alpha1.ProviderConfigUsage{}),
@@ -67,7 +67,7 @@ func Setup(mgr ctrl.Manager, l logging.Logger) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&v1alpha1.MyType{}).
+		For(&v1alpha1.ServiceProxyOperator{}).
 		Complete(r)
 }
 
@@ -85,7 +85,7 @@ type connector struct {
 // 3. Getting the ProviderConfig's credentials secret.
 // 4. Using the credentials secret to form a client.
 func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.ExternalClient, error) {
-	cr, ok := mg.(*v1alpha1.MyType)
+	cr, ok := mg.(*v1alpha1.ServiceProxyOperator)
 	if !ok {
 		return nil, errors.New(errNotMyType)
 	}
@@ -129,7 +129,7 @@ type external struct {
 }
 
 func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.ExternalObservation, error) {
-	cr, ok := mg.(*v1alpha1.MyType)
+	cr, ok := mg.(*v1alpha1.ServiceProxyOperator)
 	if !ok {
 		return managed.ExternalObservation{}, errors.New(errNotMyType)
 	}
@@ -155,7 +155,7 @@ func (c *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 }
 
 func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.ExternalCreation, error) {
-	cr, ok := mg.(*v1alpha1.MyType)
+	cr, ok := mg.(*v1alpha1.ServiceProxyOperator)
 	if !ok {
 		return managed.ExternalCreation{}, errors.New(errNotMyType)
 	}
@@ -170,7 +170,7 @@ func (c *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.ExternalUpdate, error) {
-	cr, ok := mg.(*v1alpha1.MyType)
+	cr, ok := mg.(*v1alpha1.ServiceProxyOperator)
 	if !ok {
 		return managed.ExternalUpdate{}, errors.New(errNotMyType)
 	}
@@ -185,7 +185,7 @@ func (c *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 }
 
 func (c *external) Delete(ctx context.Context, mg resource.Managed) error {
-	cr, ok := mg.(*v1alpha1.MyType)
+	cr, ok := mg.(*v1alpha1.ServiceProxyOperator)
 	if !ok {
 		return errors.New(errNotMyType)
 	}
