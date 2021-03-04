@@ -29,6 +29,10 @@ namespace DFDSServiceAPI
         {
             services.AddAutoMapper(typeof(Startup));
 
+            services.AddCors(options =>
+                options.AddPolicy("GlobalPolicy",
+                    builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -48,6 +52,8 @@ namespace DFDSServiceAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DFDSServiceAPI v1"));
             }
+
+            app.UseCors("GlobalPolicy");
 
             app.UseRouting();
 
