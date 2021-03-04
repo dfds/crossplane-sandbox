@@ -1,0 +1,55 @@
+﻿@page "/"
+@using System.Net.Http
+@using Microsoft.Extensions.Configuration
+
+@inject HttpClient Http
+@inject IConfiguration Configuration
+
+<h1>DFDS ProxyService Catalog</h1>
+
+<p>Each Cluster's services are shown below.</p>
+
+@if (results == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    @foreach (var cluster in results)
+    {
+        <h2>@cluster.proxyName</h2>
+
+        <h3>Ingresses</h3>
+
+        @foreach (var ingress in cluster.ingresses)
+        {
+
+            @foreach (var rules in ingress.Spec.Rules)
+            {
+                @foreach (var paths in rules.Http.Paths)
+                {
+                    <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a>
+                    <br />
+                }
+            }
+        }
+
+        <h3>Services</h3>
+
+        @foreach (var service in cluster.services)
+        {
+            @service.Metadata.Name
+            <br />
+        }
+    }
+}
+
+@code {
+    private ServiceProxyResult[] results;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.BaseAddress = new Uri(Configuration["ApiUrl"]);
+        results = await Http.GetFromJsonAsync<ServiceProxyResult[]>("api/ServiceProxy");
+    }
+}
