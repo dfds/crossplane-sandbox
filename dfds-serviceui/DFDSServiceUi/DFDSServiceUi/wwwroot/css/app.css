@@ -48,3 +48,13 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+.sidebar {
+    background-color: #002B45;
+    background-image: linear-gradient( 180deg, rgb(5, 39, 103) 0%, #002b45 70%);
+
+}
+
+    .sidebar .top-row {
+        background-color: #002B45;
+    }

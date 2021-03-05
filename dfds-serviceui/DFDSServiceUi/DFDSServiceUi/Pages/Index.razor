@@ -7,60 +7,74 @@
 
 <h1>DFDS ProxyService Catalog</h1>
 
-<p>Each Capability's services are shown below.</p>
+<p>Each Capability's ingresses and services are shown below.</p>
 
 @if (capabilityResults == null)
 {
-
+    <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
 }
 else
 {
+    
     @foreach (var capability in capabilityResults)
-    {
-        @if (blacklist.Any(capability.capabilityName.Contains) == false)
         {
-
-
-            <h1>@capability.capabilityName Capability</h1>
-
-            <h2>Ingresses</h2>
-            @foreach (var ingress in capability.ingresses)
+            @if (blacklist.Any(capability.capabilityName.Contains) == false)
             {
-                @foreach (var rules in ingress.Spec.Rules)
-                {
-                    @if (rules.Http != null)
-                    {
-                        @foreach (var paths in rules.Http.Paths)
-                        {
-                            <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a> <a href="https://@(rules.Host + paths.Path)/swagger"><img height ="10" width ="10" src="swagger.png" /></a>
-                                <br />
-                        }
+                <div class="accordion" id="accordionCapability">
+                    <div class="card">
+                        <div class="card-header" id="headingOne">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">@capability.capabilityName Capability</button>
+                        </div>
+                        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionCapability">
+                            <div class="card-body">
+                                <h4>Ingresses</h4>
+                                @foreach (var ingress in capability.ingresses)
+                                {
+                                    @foreach (var rules in ingress.Spec.Rules)
+                                    {
+                                        @if (rules.Http != null)
+                                        {
+                                            @foreach (var paths in rules.Http.Paths)
+                                            {
+                                                <a href="https://@(rules.Host + paths.Path)">@ingress.Metadata.Name</a> <a href="https://@(rules.Host + paths.Path)/swagger"><img height="10" width="10" src="swagger.png" /></a> <a href="">[Install Proxy]</a>
+                                                <br />
+                                            }
+                                        }
+                                    }
+                                }
+
+                                <h4>Services</h4>
+                                @foreach (var service in capability.services)
+                                {
+                                    @service.Metadata.Name
+                                    <br />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    </div>
                     }
-
-                }
-                <br />
-            }
-
-            <h2>Services</h2>
-            @foreach (var service in capability.services)
-            {
-                @service.Metadata.Name
-                <br />
-            }
-        }
-    }
+                    }
 }
 
 
 @code {
     private ServiceProxyResult[] results;
-    private List<CapabilityResult> capabilityResults = new List<CapabilityResult>();
+    private List<CapabilityResult> capabilityResults;
 
     private List<string> blacklist = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        blacklist.Add("kube-system");
+
+        var bl = Configuration.GetSection("Blacklist").GetChildren().Select(x => x.Value).ToArray();
+        foreach (var b in bl)
+        {
+            blacklist.Add(b);
+        }
+
         Http.BaseAddress = new Uri(Configuration["ApiUrl"]);
         results = await Http.GetFromJsonAsync<ServiceProxyResult[]>("api/ServiceProxy");
         GetCapabilities();
@@ -68,6 +82,7 @@ else
 
     void GetCapabilities()
     {
+        capabilityResults = new List<CapabilityResult>();
         foreach (var result in results)
         {
             foreach (var ingress in result.ingresses)
