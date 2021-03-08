@@ -19,13 +19,13 @@ import (
 var LISTEN_ADDRESS = os.Getenv("SERVICEPROXY_OPERATOR_LISTEN_ADDRESS")
 
 func InitApi(store *InMemoryStore) {
-	provider, err := oidc.NewProvider(context.Background(), "https://sts.windows.net/73a99466-ad05-4221-9f90-e7142aa2f6c1/")
+	provider, err := oidc.NewProvider(context.Background(), "https://login.microsoftonline.com/73a99466-ad05-4221-9f90-e7142aa2f6c1/v2.0")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	authMiddleware := authenticationMiddleware{
-		ClientID: "api://1fd40af5-f871-4502-834b-34c92ec9023f",
+		ClientID: "1fd40af5-f871-4502-834b-34c92ec9023f",
 		Provider: provider,
 	}
 
