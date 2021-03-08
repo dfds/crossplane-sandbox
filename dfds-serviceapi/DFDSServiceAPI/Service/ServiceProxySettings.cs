@@ -7,5 +7,7 @@ namespace Service
     public class ServiceProxySettings
     {
         public string[] proxyUrl { get; set; }
+        public string clientId { get; set; }
+        public string clientSecret { get; set; }
     }
 }

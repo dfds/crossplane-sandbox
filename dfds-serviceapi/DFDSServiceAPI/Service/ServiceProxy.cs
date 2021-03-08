@@ -7,26 +7,33 @@ using Service.Classes;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.Identity.Client;
 
 namespace Service
 {
     public class ServiceProxy : IServiceProxy
     {
         private readonly HttpClient _client = new HttpClient();
+        private readonly IConfidentialClientApplication _confidentialClient;
 
-        public ServiceProxy(string proxyUrl)
+        public ServiceProxy(string proxyUrl, IConfidentialClientApplication confidentialClient)
         {
             _client.BaseAddress = new Uri(proxyUrl);
+            _confidentialClient = confidentialClient;
         }
 
         public async Task<ServiceProxyResult> GetResults()
         {
             ServiceProxyResult result = new ServiceProxyResult(_client.BaseAddress.ToString());
 
+            var tokenResult = await _confidentialClient.AcquireTokenForClient(new List<string>(new []{"api://1fd40af5-f871-4502-834b-34c92ec9023f/.default"})).ExecuteAsync();
+
             using (_client)
             {     
                 _client.BaseAddress = new Uri(_client.BaseAddress.ToString());
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenResult.AccessToken);
 
                 try
                 {

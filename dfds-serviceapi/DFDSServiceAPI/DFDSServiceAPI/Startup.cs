@@ -46,7 +46,7 @@ namespace DFDSServiceAPI
             });
 
             var test = Configuration.GetSection("ServiceProxy:Urls").GetChildren().Select(x => x.Value).ToArray();
-            services.AddServiceProxyServiceCollection(Configuration.GetSection("ServiceProxy:Urls").GetChildren().Select(x => x.Value).ToArray());
+            services.AddServiceProxyServiceCollection(Configuration.GetSection("ServiceProxy"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
