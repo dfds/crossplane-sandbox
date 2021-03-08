@@ -22,7 +22,7 @@ namespace Service
 
             foreach (var p in _options.Value.proxyUrl)
             {
-                var sp = new ServiceProxy(p, ConfidentialClientApplicationBuilder
+                var sp = new ServiceProxy(p, _options.Value.clientScopes, ConfidentialClientApplicationBuilder
                     .Create(_options.Value.clientId)
                     .WithClientSecret(_options.Value.clientSecret)
                     .WithTenantId("73a99466-ad05-4221-9f90-e7142aa2f6c1")

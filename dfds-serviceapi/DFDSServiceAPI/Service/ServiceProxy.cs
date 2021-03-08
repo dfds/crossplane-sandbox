@@ -17,18 +17,20 @@ namespace Service
     {
         private readonly HttpClient _client = new HttpClient();
         private readonly IConfidentialClientApplication _confidentialClient;
+        private readonly string _scopes;
 
-        public ServiceProxy(string proxyUrl, IConfidentialClientApplication confidentialClient)
+        public ServiceProxy(string proxyUrl, string scopes, IConfidentialClientApplication confidentialClient)
         {
             _client.BaseAddress = new Uri(proxyUrl);
             _confidentialClient = confidentialClient;
+            _scopes = scopes;
         }
 
         public async Task<ServiceProxyResult> GetResults()
         {
             ServiceProxyResult result = new ServiceProxyResult(_client.BaseAddress.ToString());
 
-            var tokenResult = await _confidentialClient.AcquireTokenForClient(new List<string>(new []{"api://1fd40af5-f871-4502-834b-34c92ec9023f/.default"})).ExecuteAsync();
+            var tokenResult = await _confidentialClient.AcquireTokenForClient(new List<string>(new []{_scopes})).ExecuteAsync();
 
             using (_client)
             {     

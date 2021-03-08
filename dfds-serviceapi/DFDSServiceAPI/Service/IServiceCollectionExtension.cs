@@ -17,6 +17,7 @@ namespace Service
                     options.proxyUrl = conf.GetSection("Urls").GetChildren().Select(x => x.Value).ToArray();
                     options.clientId = conf.GetSection("ClientId").Value;
                     options.clientSecret = conf.GetSection("ClientSecret").Value;
+                    options.clientScopes = conf.GetSection("ClientScopes").Value;
                 });
 
             services.AddTransient<IServiceProxyService, ServiceProxyService>();
