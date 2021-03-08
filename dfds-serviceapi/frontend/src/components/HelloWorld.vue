@@ -72,7 +72,7 @@ export default {
         Object.keys(services).forEach(namespace => {
           data.push(Object.keys(services[namespace]).length);
           colours.push(this.dynamicColour());
-          labels.push(namespace);
+          labels.push(this.getCapability(namespace));
         });
 
         var payload = {
@@ -119,6 +119,21 @@ export default {
       var g = Math.floor(Math.random() * 255);
       var b = Math.floor(Math.random() * 255);
       return "rgb(" + r + "," + g + "," + b + ")";
+    },
+
+    getCapability(rootid) {
+      var result = this.capabilities.filter(cap => {
+        if (cap.rootId.valueOf() === rootid.valueOf()) {
+          return true;
+        }
+        return false;
+      })
+
+      if (result.length > 0) {
+        return result[0].name;
+      }
+
+      return rootid;
     }
   }
 }
