@@ -31,6 +31,8 @@ namespace Service
                 try
                 {
                     var temp = await _client.GetAsync("/api/get-all").Result.Content.ReadAsStringAsync();
+                    var temp2 = _client.GetAsync("/api/get-all").Result.StatusCode; //added just for troubleshoot
+                    Console.WriteLine(temp2);
                     var json = JObject.Parse(temp);
                     var ingress = json["Ingress"];
                     var service = json["Service"];

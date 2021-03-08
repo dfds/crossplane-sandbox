@@ -12,6 +12,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Service;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
 
 namespace DFDSServiceAPI
 {
@@ -32,6 +34,10 @@ namespace DFDSServiceAPI
             services.AddCors(options =>
                 options.AddPolicy("GlobalPolicy",
                     builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(Configuration, "AzureAd")
+                .EnableTokenAcquisitionToCallDownstreamApi(new string[] { "user.read" })
+                .AddInMemoryTokenCaches();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
