@@ -1,7 +1,9 @@
 package misc
 
 import (
+	"context"
 	"fmt"
+	"github.com/coreos/go-oidc"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	v1Core "k8s.io/api/core/v1"
@@ -11,11 +13,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var LISTEN_ADDRESS = os.Getenv("SERVICEPROXY_OPERATOR_LISTEN_ADDRESS")
 
 func InitApi(store *InMemoryStore) {
+	provider, err := oidc.NewProvider(context.Background(), "https://login.microsoftonline.com/73a99466-ad05-4221-9f90-e7142aa2f6c1/v2.0")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	authMiddleware := authenticationMiddleware{
+		ClientID: "1fd40af5-f871-4502-834b-34c92ec9023f",
+		Provider: provider,
+	}
+
+
 	var addr string
 	if len(LISTEN_ADDRESS) > 0 {
 		addr = LISTEN_ADDRESS
@@ -29,7 +43,7 @@ func InitApi(store *InMemoryStore) {
 		Router: r,
 		Store: store,
 	}
-	r.Handle("/api/get-all", http.HandlerFunc(app.GetAll))
+	r.Handle("/api/get-all", authMiddleware.Middleware(http.HandlerFunc(app.GetAll)))
 
 	fmt.Printf("HTTP server listening on %s\n", addr)
 	if err := http.ListenAndServe(addr, handlers.LoggingHandler(os.Stdout, r)); err != nil {
@@ -113,4 +127,43 @@ type ServiceDto struct {
 	Metadata v1.ObjectMeta
 	Spec v1Core.ServiceSpec
 	Status v1Core.ServiceStatus
+}
+
+
+type authenticationMiddleware struct {
+	ClientID string
+	Provider *oidc.Provider
+}
+
+func (amw *authenticationMiddleware) Middleware(next http.Handler) http.Handler {
+	var verifier = amw.Provider.Verifier(&oidc.Config{ClientID: amw.ClientID})
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		reqToken := r.Header.Get("Authorization") //Authorization: Bearer a7ydfs87afasd8f990
+		splitToken := strings.Split(reqToken, "Bearer")
+		if len(splitToken) != 2 {
+			http.Error(w, "Token doesn't seem right", http.StatusUnauthorized)
+			return
+		}
+
+		reqToken = strings.TrimSpace(splitToken[1])
+
+		idToken, err := verifier.Verify(r.Context(), reqToken)
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Unable to verify token", http.StatusUnauthorized)
+			return
+		}
+
+		var claims struct {
+			Emails []string `json:"emails"`
+		}
+		if err := idToken.Claims(&claims); err != nil {
+			fmt.Println(err)
+			http.Error(w, "Unable to retrieve claims", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

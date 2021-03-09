@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/aws/aws-sdk-go v1.37.17 // indirect
+	github.com/coreos/go-oidc v2.2.1+incompatible // indirect
 	github.com/go-logr/logr v0.3.0
 	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
