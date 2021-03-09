@@ -2,12 +2,13 @@ apiVersion: dynamodb.aws.crossplane.io/v1alpha1
 kind: Table
 metadata:
   name: serviceproxy-services
+  namespace: rifis-test
 spec:
   providerConfigRef:
-    name: cost-janitor-provider-config
+    name: rifis-test-aws
   writeConnectionSecretToRef:
     name: serviceproxy-dynamodb-table-services
-    namespace: developerautomation-xavgy
+    namespace: rifis-test
   forProvider:
     region: eu-west-1
     keySchema:

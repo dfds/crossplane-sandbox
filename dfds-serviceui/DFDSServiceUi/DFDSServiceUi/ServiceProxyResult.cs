@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DFDSServiceAPI.Dtos
+namespace DFDSServiceUi
 {
-    public class ServiceProxyResultDto
+    public class ServiceProxyResult
     {
         public string proxyName { get; set; }
         public List<Extensionsv1beta1Ingress> ingresses { get; set; }

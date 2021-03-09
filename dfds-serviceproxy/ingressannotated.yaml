@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: my-ingress-name
+  annotations:
+    dfds.serviceproxy.kubernetes.io/identifier: "my-ingress-id"
+spec:
+  rules:
+  - host: test.icle.com
+    http:
+      paths:
+      - path: /testpath
+        pathType: Prefix
+        backend:
+          serviceName: my-service-name
+          servicePort: 80
