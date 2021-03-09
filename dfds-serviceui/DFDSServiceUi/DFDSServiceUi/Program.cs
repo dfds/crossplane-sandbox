@@ -15,6 +15,17 @@ namespace DFDSServiceUi
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+            builder.Services.AddMsalAuthentication(options =>
+            {
+                builder.Configuration.Bind("AzureAd", options.ProviderOptions.Authentication);
+                options.ProviderOptions.Cache.CacheLocation = "localStorage";
+                options.ProviderOptions.DefaultAccessTokenScopes.Add(
+                    builder.Configuration["AzureAd:ClientScopes"]);
+                options.UserOptions.RoleClaim = "roles";
+
+            });
+
             builder.RootComponents.Add<App>("#app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
