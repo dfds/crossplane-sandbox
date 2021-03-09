@@ -2,6 +2,8 @@
 @using System.Net.Http
 @using Microsoft.Extensions.Configuration
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using System.Security.Claims
 
 @inject HttpClient Http
 @inject IConfiguration Configuration
@@ -9,7 +11,6 @@
 <h1>DFDS ProxyService Catalog</h1>
 
 <p>Each Capability's ingresses and services are shown below.</p>
-
 @if (capabilityResults == null)
 {
     <div class="spinner-border" role="status">
@@ -65,19 +66,43 @@ else
     private ServiceProxyResult[] results;
     private List<CapabilityResult> capabilityResults;
 
+    private string _authMessage;
+    private string _surnameMessage;
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+
     private List<string> blacklist = new List<string>();
+
+    private async Task GetClaimsPrincipalData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        Console.WriteLine(user.Identity.Name);
+
+        if (user.Identity.IsAuthenticated)
+        {
+            _authMessage = $"{user.Identity.Name} is authenticated.";
+            _claims = user.Claims;
+            _surnameMessage =
+                $"Surname: {user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value}";
+        }
+        else
+        {
+            _authMessage = "The user is NOT authenticated.";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
-
+        GetClaimsPrincipalData();
         var bl = Configuration.GetSection("Blacklist").GetChildren().Select(x => x.Value).ToArray();
         foreach (var b in bl)
         {
             blacklist.Add(b);
         }
 
-        Http.BaseAddress = new Uri(Configuration["ApiUrl"]);
+        //Http.BaseAddress = new Uri(Configuration["ApiUrl"]);
         results = await Http.GetFromJsonAsync<ServiceProxyResult[]>("api/ServiceProxy");
+
         GetCapabilities();
     }
 

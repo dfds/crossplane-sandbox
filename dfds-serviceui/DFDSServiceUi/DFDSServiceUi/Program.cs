@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 namespace DFDSServiceUi
 {
@@ -26,9 +27,16 @@ namespace DFDSServiceUi
 
             });
 
+            builder.Services.AddScoped<CustomAuthorizationMessageHandler>();
+
+            builder.Services.AddHttpClient("DFDSServiceApi", client => client.BaseAddress = new Uri(builder.Configuration["ApiUrl"]))
+                .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
+            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DFDSServiceApi"));
+
+
             builder.RootComponents.Add<App>("#app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
             await builder.Build().RunAsync();
         }
