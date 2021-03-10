@@ -17,9 +17,19 @@
         <p>Each Capability's ingresses and services are shown below.</p>
         @if (capabilityResults == null)
         {
-            <div class="spinner-border" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+            @if (fetchingData)
+            {
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            }
+
+            @if (errorMessage != "")
+            {
+                <div class="alert alert-danger" role="alert">
+                    @errorMessage
+                </div>
+            }
         }
         else
         {
@@ -77,6 +87,9 @@
     private ServiceProxyResult[] results;
     private List<CapabilityResult> capabilityResults;
 
+    private bool fetchingData = false;
+    private string errorMessage = "";
+
     private string _authMessage;
     private string _surnameMessage;
     private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
@@ -114,15 +127,22 @@
         try
         {
             var client = ClientFactory.CreateClient("DFDSServiceApi");
+            fetchingData = true;
             results = await client.GetFromJsonAsync<ServiceProxyResult[]>("api/ServiceProxy");
         }
         catch (AccessTokenNotAvailableException exception)
         {
             exception.Redirect();
+            errorMessage = "Access token not available";
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
+            errorMessage = "There was an error retrieving data";
+        }
+        finally
+        {
+            fetchingData = false;
         }
 
         if (results != null)
