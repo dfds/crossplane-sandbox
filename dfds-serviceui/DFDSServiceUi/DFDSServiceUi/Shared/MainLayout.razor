@@ -11,17 +11,7 @@
 
     <div class="main">
         <div class="top-row px-4">
-            <AuthorizeView>
-                <Authorized>
-                    Hello, @context.User.Identity.Name!
-                    <button class="nav-link btn btn-link" @onclick="BeginLogout">
-                        Log out
-                    </button>
-                </Authorized>
-                <NotAuthorized>
-                    <a href="authentication/login">Log in</a>
-                </NotAuthorized>
-            </AuthorizeView>
+            <LoginDisplay />
         </div>
 
         <div class="content px-4">

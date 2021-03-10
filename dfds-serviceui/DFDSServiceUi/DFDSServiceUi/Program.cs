@@ -24,6 +24,7 @@ namespace DFDSServiceUi
                 options.ProviderOptions.DefaultAccessTokenScopes.Add(
                     builder.Configuration["AzureAd:ClientScopes"]);
                 options.UserOptions.RoleClaim = "roles";
+                options.ProviderOptions.LoginMode = "redirect";
 
             });
 
@@ -31,7 +32,7 @@ namespace DFDSServiceUi
 
             builder.Services.AddHttpClient("DFDSServiceApi", client => client.BaseAddress = new Uri(builder.Configuration["ApiUrl"]))
                 .AddHttpMessageHandler<CustomAuthorizationMessageHandler>();
-            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DFDSServiceApi"));
+            //builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("DFDSServiceApi"));
 
 
             builder.RootComponents.Add<App>("#app");
