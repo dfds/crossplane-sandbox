@@ -40,10 +40,10 @@
                 {
                     <div class="accordion" id="accordionCapability">
                         <div class="card">
-                            <div class="card-header" id="headingOne">
-                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">@capability.capabilityName Capability</button>
+                            <div class="card-header" id="heading@(capability.capabilityName)">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse@(capability.capabilityName)" aria-expanded="true" aria-controls="collapse@(capability.capabilityName)">@capability.capabilityName Capability</button>
                             </div>
-                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionCapability">
+                            <div id="collapse@(capability.capabilityName)" class="collapse" aria-labelledby="heading@(capability.capabilityName)" data-parent="#accordionCapability">
                                 <div class="card-body">
                                     <h4>Ingresses</h4>
                                     @foreach (var ingress in capability.ingresses)
